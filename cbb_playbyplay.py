@@ -31,14 +31,6 @@ def get_espn_data(data_type, game_id):
 
 
 def get_score_by_minute(made_shots, home_team):
-    # home_pts
-    #   minute
-    #   total score
-    # away_pts
-    #   minute
-    #   total score
-
-    # 19:41 -> 1
     homeAway = 'home' if home_team else 'away'
     score = homeAway + 'Score'
     pts = []
@@ -64,14 +56,6 @@ def get_score_by_minute(made_shots, home_team):
             else:
                 prev_made_shots.append({'minute': minute,
                                         'score': made_shot[score]})
-                # dif = minute - prev_home_made_shot['minute']
-                # for i in range(dif):
-                #     print(dif)
-                #     # print(prev_home_made_shot['homeScore'])
-                #     home_pts.append(
-                #         {'minute': minute, 'homeScore': prev_home_made_shot['homeScore']})
-            # prev_home_made_shot = {'minute': minute,
-            #                        'homeScore': made_shot['homeScore']}
 
     # add final minutes points
     for prev_shot in prev_made_shots:
@@ -84,7 +68,6 @@ def get_score_by_minute(made_shots, home_team):
             pts.append(
                 {'minute': prev_shot['minute']+i+1, 'score': prev_shot['score']})
 
-    # print(pts)
     return pts
 
 
