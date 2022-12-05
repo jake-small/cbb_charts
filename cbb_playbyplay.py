@@ -30,11 +30,26 @@ def get_espn_data(data_type, game_id):
     return data
 
 
-def get_score_by_minute(made_shots, home_team):
-    homeAway = 'home' if home_team else 'away'
+def get_playbyplay_data(pbp_data, combine_halfs=True):
+    # json data looks like:
+    #   page -> content -> gamepackage ->
+    #                                     pbp -> playGrps
+    #                                     shtChrt -> plays
+    playbyplay_groups = pbp_data['page']['content']['gamepackage']['pbp']['playGrps']
+    if (combine_halfs):
+        # combine first and second half data
+        return playbyplay_groups[0] + playbyplay_groups[1]
+    return playbyplay_groups
+
+
+def get_scores_by_minute(made_shots, homeAway):
+    if (homeAway != 'home' and homeAway != 'away'):
+        print(
+            f"Error in get_scores_by_minute(). Param 'homeAway' needs to be either 'home' or 'away', it was {homeAway}")
+        return
     score = homeAway + 'Score'
     pts = []
-    prev_made_shots = [{'minute': 0, 'score': 0}]
+    prev_made_shots = [{'minute': 0, 'score': 0, 'player': ''}]
     for made_shot in made_shots:
         display_value = made_shot['clock']['displayValue']
         display_minute = int(display_value[:display_value.index(":")])
@@ -44,45 +59,51 @@ def get_score_by_minute(made_shots, home_team):
             if (minute != prev_made_shots[0]['minute']):
                 for prev_shot in prev_made_shots:
                     pts.append(
-                        {'minute': prev_shot['minute'], 'score': prev_shot['score']})
+                        {'minute': prev_shot['minute'], 'score': prev_shot['score'], 'player': prev_shot['player']})
                 dif = minute - \
                     prev_made_shots[0]['minute'] - \
                     len(prev_made_shots)
                 for i in range(dif):
                     pts.append(
-                        {'minute': prev_shot['minute']+i+1, 'score': prev_shot['score']})
+                        {'minute': prev_shot['minute']+i+1, 'score': prev_shot['score'], 'player': prev_shot['player']})
                 prev_made_shots = [{'minute': minute,
-                                    'score': made_shot[score]}]
+                                    'score': made_shot[score],
+                                    'player': get_player_who_scored(made_shot)}]
             else:
                 prev_made_shots.append({'minute': minute,
-                                        'score': made_shot[score]})
-
-    # add final minutes points
+                                        'score': made_shot[score],
+                                        'player': get_player_who_scored(made_shot)})
+    # add final minutes
     for prev_shot in prev_made_shots:
         pts.append(
-            {'minute': prev_shot['minute'], 'score': prev_shot['score']})
+            {'minute': prev_shot['minute'], 'score': prev_shot['score'], 'player': prev_shot['player']})
         dif = minute - \
             prev_made_shots[0]['minute'] - \
             len(prev_made_shots)
         for i in range(dif):
             pts.append(
-                {'minute': prev_shot['minute']+i+1, 'score': prev_shot['score']})
-
+                {'minute': prev_shot['minute']+i+1, 'score': prev_shot['score'], 'player': prev_shot['player']})
     return pts
 
 
-pbp = get_espn_data("playbyplay", 401479681)
+def get_player_who_scored(made_shot):
+    text = made_shot['text']
+    return text[:text.index(" made ")]
 
-# json data we need should be around here:
-# page -> content -> gamepackage ->
-#                                   pbp -> playGrps
-#                                   shtChrt -> plays
-playbyplay_groups = pbp['page']['content']['gamepackage']['pbp']['playGrps']
-playbyplay = playbyplay_groups[0] + playbyplay_groups[1]
-made_shots = [s for s in playbyplay if 'scoringPlay' in s]
 
-get_score_by_minute(made_shots, True)
+def get_made_shots(playbyplay):
+    return [s for s in playbyplay if 'scoringPlay' in s]
+
+
+# pbp_data = get_espn_data("playbyplay", 401479681)
+# playbyplay = get_playbyplay_data(pbp_data)
+# made_shots = get_made_shots(playbyplay)
+# home_score_by_minutes = get_scores_by_minute(made_shots, 'home')
+# # print(home_score_by_minutes)
+# away_score_by_minutes = get_scores_by_minute(made_shots, 'away')
+# # print(away_score_by_minutes)
+
+
 
 # save_json(made_shots, 'cached_data/pbp.json')
-
 # data = {'home': [1, 4, 6, 8, 9],'away': [1, 4, 6, 8, 9]}
