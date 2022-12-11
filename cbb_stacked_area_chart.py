@@ -1,3 +1,5 @@
+from cbb_boxscore import *
+from espn_helper import *
 from cbb_playbyplay import *
 from stacked_area_chart import make_stacked_area_chart
 
@@ -77,7 +79,7 @@ def get_scores_for_chart_without_players(scores_by_minute, player_names):
 
 
 def create_chart_home_vs_away(game_id):
-    pbp_data = get_espn_data("playbyplay", game_id)
+    pbp_data = get_ncb_playbyplay_data(game_id)
     playbyplay = get_playbyplay_data(pbp_data)
     made_shots = get_made_shots(playbyplay)
 
@@ -99,7 +101,7 @@ def create_chart_home_vs_away(game_id):
 
 
 def create_chart_players(game_id):
-    pbp_data = get_espn_data("playbyplay", game_id)
+    pbp_data = get_ncb_playbyplay_data(game_id)
     playbyplay = get_playbyplay_data(pbp_data)
     made_shots = get_made_shots(playbyplay)
 
@@ -118,7 +120,7 @@ def create_chart_players(game_id):
     stacked_area_data = format_scores_for_stacked_area_chart(
         [away_scores_PeteNance, away_scores_bench,
             home_scores_bench, home_scores_TrayceJacksonDavis],
-        ['Nance', 'UNC Bench', "IU Bench", 'TJD'])
+        ['Nance', 'UNC Bench', 'IU Bench', 'TJD'])
 
     # stacked_area_data = format_scores_for_stacked_area_chart(
     #     home_scores, away_scores)
@@ -126,5 +128,13 @@ def create_chart_players(game_id):
     make_stacked_area_chart(stacked_area_data)
 
 
+def get_starters_and_bench(game_id):
+    bs_data = get_ncb_boxscore_data(game_id)
+    boxscore = get_boxscore_data(bs_data)
+    players = get_starter_bench_data(boxscore, 'home')
+    print(players)
+
+
 # create_chart_home_vs_away(401479681)
-create_chart_players(401479681)
+# create_chart_players(401479681)
+get_starters_and_bench(401479681)
