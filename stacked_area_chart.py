@@ -28,5 +28,5 @@ def make_stacked_area_chart(values):
     plt.stackplot(range(1, 41),  data_2d_aray, labels=labels, colors=colors)
     plt.figlegend(loc='upper left')
     plt.margins(0, 0)
-    plt.title('100 % stacked area chart')
+    plt.title('UNC vs IU @ Assembly Hall 11/30/2022') # TODO make this dynamically
     plt.show()
