@@ -1,0 +1,1 @@
+![IU vs UNC Chart](UNC_vs_IU_at_Assembly_Hall_11_30_2022.png)
