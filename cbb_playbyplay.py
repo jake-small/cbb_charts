@@ -39,7 +39,8 @@ def get_scores_by_minute_for_players(made_shots, player_names):
     pts = []
     score = 0
     for made_shot in made_shots:
-        if (made_shot['player'] in player_names):
+        player_short_name = get_player_short_name(made_shot['player'])
+        if (player_short_name in player_names):
             score = score + made_shot['points']
             pts.append({'minute': made_shot['minute'],
                         'score': score,
@@ -54,7 +55,8 @@ def get_scores_by_minute_without_players(made_shots, player_names):
     pts = []
     score = 0
     for made_shot in made_shots:
-        if (made_shot['player'] not in player_names):
+        player_short_name = get_player_short_name(made_shot['player'])
+        if (player_short_name not in player_names):
             score = score + made_shot['points']
             pts.append({'minute': made_shot['minute'],
                         'score': score,
@@ -70,3 +72,15 @@ def get_player_who_scored(made_shot):
 
 def get_made_shots(playbyplay):
     return [s for s in playbyplay if 'scoringPlay' in s]
+
+
+def get_player_short_name(player_name):
+    # player_name: "Trayce Jackson-Davis"
+    # -> shrtNm: "T. Jackson-Davis"
+    first_short_name = player_name[0]
+    if (player_name[1] == '.'):
+        first_short_name = player_name[0:4]
+    else:
+        first_short_name = first_short_name + '.'
+    last_name = player_name.split(" ")[-1]
+    return f"{first_short_name} {last_name}"

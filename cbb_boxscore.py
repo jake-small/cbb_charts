@@ -25,7 +25,5 @@ def get_starter_bench_data(bs_data, home_away):
 def get_athletes(raw_athlete_data):
     athletes = []
     for athlete in raw_athlete_data['athlts']:
-        print('a')
         athletes.append(athlete['athlt']['shrtNm'])
     return athletes
-

@@ -5,6 +5,11 @@ from stacked_area_chart import make_stacked_area_chart
 
 
 def get_bottom_of_minute_scores(scores_by_minute):
+    if (not scores_by_minute):
+        no_points = []
+        for i in range(1, 41):
+            no_points.append({'minute': i, 'score': 0, 'player': ''})
+        return no_points
     final_score_each_minute = []
     seen_minutes = set()
     for score in reversed(scores_by_minute):
@@ -30,7 +35,6 @@ def get_bottom_of_minute_scores(scores_by_minute):
     if (minute < 41):
         for i in range(41 - minute):
             prev_score = final_score_each_minute[-1]['score']
-            prev_score = prev_score if index-1 >= 0 else 0
             empty_minute = {
                 'minute': minute, 'score': prev_score, 'player': ''}
             bottom_of_minute_scores.append(empty_minute)
@@ -78,6 +82,13 @@ def get_scores_for_chart_without_players(scores_by_minute, player_names):
     return scores
 
 
+def get_starters_and_bench(game_id, home_away):
+    bs_data = get_ncb_boxscore_data(game_id)
+    boxscore = get_boxscore_data(bs_data)
+    players = get_starter_bench_data(boxscore, home_away)
+    return players
+
+
 def create_chart_home_vs_away(game_id):
     pbp_data = get_ncb_playbyplay_data(game_id)
     playbyplay = get_playbyplay_data(pbp_data)
@@ -105,36 +116,37 @@ def create_chart_players(game_id):
     playbyplay = get_playbyplay_data(pbp_data)
     made_shots = get_made_shots(playbyplay)
 
+    home_players = get_starters_and_bench(game_id, 'home')
     home_scores_by_minutes = get_scores_by_minute(made_shots, 'home')
-    home_scores_TrayceJacksonDavis = get_scores_for_chart_for_players(
-        home_scores_by_minutes, ['Trayce Jackson-Davis'])
+    home_scores = []
+    for player_short_name in home_players['starters']:
+        home_scores_player = get_scores_for_chart_for_players(
+            home_scores_by_minutes, [player_short_name])
+        home_scores.append(home_scores_player)
     home_scores_bench = get_scores_for_chart_without_players(
-        home_scores_by_minutes, ['Trayce Jackson-Davis'])
+        home_scores_by_minutes, home_players['starters'])
+    home_scores.append(home_scores_bench)
 
+    away_players = get_starters_and_bench(game_id, 'away')
     away_scores_by_minutes = get_scores_by_minute(made_shots, 'away')
-    away_scores_PeteNance = get_scores_for_chart_for_players(
-        away_scores_by_minutes, ['Pete Nance'])
+    away_scores = []
     away_scores_bench = get_scores_for_chart_without_players(
-        away_scores_by_minutes, ['Pete Nance'])
+        away_scores_by_minutes, away_players['starters'])
+    away_scores.append(away_scores_bench)
+    for player_short_name in away_players['starters']:
+        away_scores_player = get_scores_for_chart_for_players(
+            away_scores_by_minutes, [player_short_name])
+        away_scores.append(away_scores_player)
 
+    scores = away_scores + home_scores
+    labels = ['away bench'] + away_players['starters'] + \
+        home_players['starters'] + ['home bench']
     stacked_area_data = format_scores_for_stacked_area_chart(
-        [away_scores_PeteNance, away_scores_bench,
-            home_scores_bench, home_scores_TrayceJacksonDavis],
-        ['Nance', 'UNC Bench', 'IU Bench', 'TJD'])
-
-    # stacked_area_data = format_scores_for_stacked_area_chart(
-    #     home_scores, away_scores)
+        scores,
+        labels)
 
     make_stacked_area_chart(stacked_area_data)
 
 
-def get_starters_and_bench(game_id):
-    bs_data = get_ncb_boxscore_data(game_id)
-    boxscore = get_boxscore_data(bs_data)
-    players = get_starter_bench_data(boxscore, 'home')
-    print(players)
-
-
 # create_chart_home_vs_away(401479681)
-# create_chart_players(401479681)
-get_starters_and_bench(401479681)
+create_chart_players(401479681)
